@@ -1,0 +1,69 @@
+import express from "express";
+import { cart, products } from "../db/schema.js";
+import { db } from "../config/db.js";
+import { eq, asc } from "drizzle-orm";
+
+const route = express.Router();
+route.get("/", async (req, res) => {
+  const cartItems = await db.select().from(cart).orderBy(asc(cart.createdAt), asc(cart.productId));
+  const queryResult = await Promise.all(cartItems.map(async (item) => {
+    const product = await db
+      .select()
+      .from(products)
+      .where(eq(products.id, item.productId));
+    return {
+      ...item,
+      image: product[0].image,
+      keywords: product[0].keywords,
+      name: product[0].name,
+      priceCents: product[0].priceCents,
+    };
+  }));
+  console.log('cart', cartItems)
+
+  res.send(queryResult);
+});
+
+
+
+route.patch("/:productId", async(req,res) => {
+    const {productId} = req.params;
+    const {deliveryOptionId, quantity} = req.body;
+    const queryResult = await db.update(cart).set({
+        ...(quantity !== undefined || quantity === 0 ? {quantity}:{}),
+        ...(deliveryOptionId !== undefined ? {deliveryOptionId}:{}),
+        updatedAt:new Date()
+    }).where(eq(cart.productId, productId));
+    res.send(queryResult)
+
+})
+
+route.post("/", async(req, res) => {
+    const {productId, quantity} = req.body;
+    console.log('addToCart', req.body)
+    const product = await db.select().from(products).where(eq(products.id, productId));
+    if (!product) {
+        return res.status(400).json({error: 'Product not found'})
+    }
+
+    if (typeof quantity !== 'number' || quantity < 1 || quantity > 10) {
+        return res.status(400).json({error: 'Quantity must be a number between 1 and 10'})
+    };
+
+    let cartItem = await db.select().from(cart).where(eq(cart.productId, productId));
+    if (cartItem.length !== 0) {
+        await db.update(cart).set({quantity: (quantity+cartItem[0].quantity)}).where(eq(cart.productId, productId));
+    } else {
+        await db.insert(cart).values({productId:productId, quantity: quantity, deliveryOptionId:"1"})
+    }
+    res.send('query')
+})
+
+
+route.delete("/:productId", async(req, res) => {
+    const {productId} = req.params
+    await db.delete(cart).where(eq(cart.productId, productId));
+    res.send('delete successfully!')
+})
+
+export default route;
