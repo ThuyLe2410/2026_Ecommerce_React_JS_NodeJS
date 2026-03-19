@@ -1,3 +1,4 @@
+import { time } from "drizzle-orm/mysql-core";
 import {
   pgTable,
   varchar,
@@ -52,6 +53,19 @@ export const deliveryOptions = pgTable("deliveryOptions", {
   id: varchar("id").primaryKey(),
   deliveryDays: integer("deliveryDays"),
   priceCents: integer("priceCents"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const users = pgTable("users", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
