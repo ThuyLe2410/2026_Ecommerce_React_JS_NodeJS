@@ -89,4 +89,9 @@ router.get("/me", requireAuth, async (req, res) => {
   res.send({ userId: payload.id, email: payload.email, name: user.name });
 });
 
+router.post("/signout", (req, res) => {
+    res.clearCookie("auth_token"
+    )
+    res.json({ok:true})
+})
 export default router;

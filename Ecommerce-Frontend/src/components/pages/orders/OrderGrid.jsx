@@ -4,31 +4,31 @@ import { Fragment, useState } from "react";
 import axios from "axios";
 
 export function OrderGrid({ orders, loadCart }) {
-  const [selectedProductId, setSelectedProductId] = useState(null);
-  const [qty, setQty] = useState(0);
+  const [selectedItem, setSelectedItem] = useState({});
+  const [qtyByProductId, setQtyByProductId] = useState({});
+ const getQty = (id) =>
+  Number.isFinite(qtyByProductId[id]) ? qtyByProductId[id] : 1;
 
-  const handleBuyAgain = async (id, nextQty) => {
-    setSelectedProductId(id);
+  const handleBuyAgain = async (id) => {
+    const qty = getQty(id)
     await axios.patch(
       `http://localhost:3001/api/cart/${id}`,
       {
-        quantity: nextQty,
+        quantity: qty,
       },
       { withCredentials: true },
     );
     await loadCart();
   };
   const handleDecrease = (id) => {
-    const next = Math.max(0, qty - 1);
-    setQty(next);
-    handleBuyAgain(id, next);
+    const next = Math.max(1, getQty(id) - 1);
+    setQtyByProductId((prev) => ({ ...prev, [id]: next }));
   };
   const handleIncrease = (id) => {
-    const next = qty + 1;
-    setQty(next);
-    console.log('buy again quantity', qty)
-    handleBuyAgain(id, next);
+    const next = getQty(id) + 1;
+    setQtyByProductId((prev) => ({ ...prev, [id]: next }));
   };
+
   return (
     <div className="order-grid">
       {orders.map((order) => {
@@ -70,19 +70,20 @@ export function OrderGrid({ orders, loadCart }) {
                         {" "}
                         Quantity: {product.quantity}
                       </div>
-                      {selectedProductId == product.productId ? (
+                      {(selectedItem.productId == product.productId && selectedItem.orderId === order.id) ? (
                         <div>
                           <button
                             className="item-button"
                             onClick={() => handleDecrease(product.productId)}>
                             -
-                          </button>{" "}
-                          {qty}{" "}
+                          </button> {" "}
+                          {getQty(product.productId)}
                           <button
                             className="item-button"
                             onClick={() => handleIncrease(product.productId)}>
                             +
                           </button>
+                          <button className="button-secondary" onClick={() => handleBuyAgain(product.productId)}>Add to cart</button>
                         </div>
                       ) : (
                         <button className="buy-again-button button-primary">
@@ -92,7 +93,7 @@ export function OrderGrid({ orders, loadCart }) {
                           />
                           <span
                             className="buy-again-message"
-                            onClick={() => handleBuyAgain(product.productId)}>
+                            onClick={() => setSelectedItem({productId: product.productId, orderId: order.id})}>
                             Buy it again
                           </span>
                         </button>

@@ -18,6 +18,9 @@ route.get("/", requireAuth, async (req, res) => {
         .select()
         .from(products)
         .where(eq(products.id, item.productId));
+      if (product.length === 0) {
+        return {...item, image: null, keywords:[], name: "Unknown", priceCents: 0};
+      }
       return {
         ...item,
         image: product[0].image,
@@ -35,9 +38,11 @@ route.patch("/:productId", requireAuth, async (req, res) => {
   const userId = req.user.id;
   const { productId } = req.params;
   const { deliveryOptionId, quantity } = req.body;
-  console.log('buy again', userId, productId, deliveryOptionId, quantity)
-  const cart_db = await db.select().from(cart);
-  if (cart_db.length > 0) {
+  const existingCart_byProductId = await db
+    .select()
+    .from(cart)
+    .where(and(eq(cart.userId, userId), eq(cart.productId, productId)));
+  if (existingCart_byProductId.length > 0) {
     await db
       .update(cart)
       .set({
@@ -47,16 +52,13 @@ route.patch("/:productId", requireAuth, async (req, res) => {
       })
       .where(and(eq(cart.productId, productId), eq(cart.userId, userId)));
   } else {
-    await db
-      .insert(cart)
-      .values({
-        productId: productId,
-        quantity: quantity,
-        deliveryOptionId: "1",
-        userId: userId,
-      });
+    await db.insert(cart).values({
+      productId: productId,
+      quantity: quantity,
+      deliveryOptionId: "1",
+      userId: userId,
+    });
   }
-
   res.send("updated successfully!");
 });
 
@@ -67,7 +69,7 @@ route.post("/", requireAuth, async (req, res) => {
     .select()
     .from(products)
     .where(eq(products.id, productId));
-  if (!product) {
+  if (product.length === 0) {
     return res.status(400).json({ error: "Product not found" });
   }
 
@@ -97,9 +99,12 @@ route.post("/", requireAuth, async (req, res) => {
   res.send("query");
 });
 
-route.delete("/:productId", async (req, res) => {
+route.delete("/:productId", requireAuth, async (req, res) => {
+  const userId = req.user.id;
   const { productId } = req.params;
-  await db.delete(cart).where(eq(cart.productId, productId));
+  await db
+    .delete(cart)
+    .where(and(eq(cart.productId, productId), eq(cart.userId, userId)));
   res.send("delete successfully!");
 });
 

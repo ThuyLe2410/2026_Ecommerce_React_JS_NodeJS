@@ -21,7 +21,7 @@ export function CheckoutPage({ cart, loadCart }) {
   useEffect(() => {
     const fetchPaymentSummary = async () => {
       const response = await axios.get(
-        "http://localhost:3001/api/paymentSummary",
+        "http://localhost:3001/api/paymentSummary", {withCredentials:true}
       );
       setPaymentSummary(response.data);
     };

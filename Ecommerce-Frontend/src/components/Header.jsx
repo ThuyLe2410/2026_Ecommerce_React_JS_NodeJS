@@ -2,8 +2,11 @@ import "./header.css";
 import { useState } from "react";
 
 import { Link } from "react-router";
-export function Header({ setSearchInput, cart, user }) {
+import { useAuth } from "../context/authContext";
+export function Header({ setSearchInput, cart }) {
   const [searchValue, setSearchValue] = useState("");
+  const {user, signout} = useAuth();
+
   const onSubmitSearch = (e) => {
     e.preventDefault();
     setSearchInput(searchValue);
@@ -16,6 +19,7 @@ export function Header({ setSearchInput, cart, user }) {
   cart.forEach((item) => {
     totalQuantity += item.quantity;
   });
+ 
   return (
     <div className="header">
       <div className="left-section">
@@ -38,9 +42,10 @@ export function Header({ setSearchInput, cart, user }) {
 
       <div className="right-section">
         <Link className="profile-link header-link" to="/profile">
-          <span className="user-text">Hello, {user.name}</span>
+          <span className="user-text">Hello, {user?.name}</span>
     
         </Link>
+        {user? (<button onClick={signout}>Sign out</button>):(<Link to="/signIn">Sign in</Link>)}
         <Link className="orders-link header-link" to="/orders">
           <span className="orders-text">Orders</span>
         </Link>

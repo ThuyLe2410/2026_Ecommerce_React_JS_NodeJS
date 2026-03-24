@@ -2,6 +2,7 @@ import axios from "axios";
 import { useState } from "react";
 import { Link } from "react-router";
 import { useNavigate } from "react-router";
+import { useAuth } from "../../../context/authContext";
 
 export function SignIn() {
   const navigate = useNavigate();
@@ -9,6 +10,7 @@ export function SignIn() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const {fetchUser} = useAuth()
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -23,6 +25,7 @@ export function SignIn() {
         },
         { withCredentials: true },
       );
+      await fetchUser();
       navigate("/");
     } catch (err) {
       const message =
@@ -34,7 +37,7 @@ export function SignIn() {
   };
   return (
     <div className="auth-page">
-      <h1 className="auth-title">Create account</h1>
+      <h1 className="auth-title">Sign in</h1>
       <form className="auth-form" onSubmit={onSubmit}>
         <label className="auth-label">
           Email{" "}
