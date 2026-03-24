@@ -2,12 +2,15 @@ import express from "express";
 import { deliveryOptions, orders, products, cart } from "../db/schema.js";
 import { db } from "../config/db.js";
 import { desc, eq } from "drizzle-orm";
+import { requireAuth } from "./auth.js";
 
 const router = express.Router();
-router.get("/", async (req, res) => {
+
+router.get("/", requireAuth, async (req, res) => {
+  const userId = req.user.id;
   const sortedOrders = await db
     .select()
-    .from(orders)
+    .from(orders).where(eq(orders.userId, userId))
     .orderBy(desc(orders.orderTimeMs));
 
   const queryResult = await Promise.all(
@@ -18,7 +21,6 @@ router.get("/", async (req, res) => {
             .select()
             .from(products)
             .where(eq(products.id, product.productId));
-          console.log("productDetails", productDetails);
           const details = productDetails[0];
           if (!details) {
             return {
@@ -49,8 +51,10 @@ router.get("/", async (req, res) => {
 
 
 
-router.post("/", async(req, res) => {
-  const cartItems = await db.select().from(cart);
+router.post("/",requireAuth, async(req, res) => {
+  const userId = req.user.id;
+  console.log('userId', userId)
+  const cartItems = await db.select().from(cart).where(eq(cart.userId, userId));
   if (cartItems.length===0) {
     return res.send('the cart is empty')
   }
@@ -60,7 +64,6 @@ router.post("/", async(req, res) => {
       const product = await db.select().from(products).where(eq(products.id, cartItem.productId));
       const deliveryOption = await db.select().from(deliveryOptions).where(eq(deliveryOptions.id, cartItem.deliveryOptionId))
       const productCost = product[0].priceCents * cartItem.quantity;
-      console.log('productCost', productCost)
       const shipping = deliveryOption[0].priceCents;
       totalCostCents += productCost + shipping;
       const estimatedDeliveryTimeMs = Date.now() + deliveryOption[0].deliveryDays * 24 * 60 * 60 * 1000;
@@ -71,11 +74,9 @@ router.post("/", async(req, res) => {
       }
     })
   )
-  console.log('cart_products', cart_products);
-  console.log('totalCostCents', totalCostCents)
   totalCostCents = Math.round(totalCostCents * 1.1)
-  await db.insert(orders).values({orderTimeMs:Date.now(), totalCostCents, products: cart_products});
-  await db.delete(cart);
+  await db.insert(orders).values({userId:userId,orderTimeMs:Date.now(), totalCostCents, products: cart_products});
+  await db.delete(cart).where(eq(cart.userId, userId));
   res.send('inserted order successfully!')
 })
 

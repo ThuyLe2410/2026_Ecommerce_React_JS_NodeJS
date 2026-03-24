@@ -3,34 +3,37 @@ import { formatMoney } from "../utils/money";
 import { useState } from "react";
 
 export function CartItemDetails({ cartItem, loadCart }) {
-  const [qty, setQty] = useState(cartItem.quantity);
+  const qty = cartItem.quantity;
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleUpdate = async (productId, nextQty) => {
     setIsUpdating(true);
-    await axios.patch(`http://localhost:3001/api/cart/${productId}`, {
-      quantity: nextQty,
-    });
+    await axios.patch(
+      `http://localhost:3001/api/cart/${productId}`,
+      {
+        quantity: nextQty,
+      },
+      { withCredentials: true },
+    );
     await loadCart();
   };
 
   const handleDelete = async (productId) => {
-    await axios.delete(`http://localhost:3001/api/cart/${productId}`);
+    await axios.delete(`http://localhost:3001/api/cart/${productId}`, {
+      withCredentials: true,
+    });
     await loadCart();
   };
 
   const handleDecrease = async () => {
     const next = Math.max(1, qty - 1);
-    setQty(next);
     handleUpdate(cartItem.productId, next);
   };
 
   const handleIncrease = async () => {
     const next = qty + 1;
-    setQty(next);
     handleUpdate(cartItem.productId, next);
   };
-  console.log("updating", isUpdating);
   return (
     <>
       <img className="product-image" src={cartItem.image} />
@@ -45,7 +48,7 @@ export function CartItemDetails({ cartItem, loadCart }) {
               onClick={handleDecrease}>
               -
             </button>{" "}
-            {qty}{" "}
+            {qty}
           </span>
           <button
             className={isUpdating ? "item-button" : "item-button hide-button"}

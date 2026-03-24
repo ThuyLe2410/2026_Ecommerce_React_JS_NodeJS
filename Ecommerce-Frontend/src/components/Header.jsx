@@ -2,7 +2,7 @@ import "./header.css";
 import { useState } from "react";
 
 import { Link } from "react-router";
-export function Header({ setSearchInput, cart }) {
+export function Header({ setSearchInput, cart, user }) {
   const [searchValue, setSearchValue] = useState("");
   const onSubmitSearch = (e) => {
     e.preventDefault();
@@ -37,6 +37,10 @@ export function Header({ setSearchInput, cart }) {
       </form>
 
       <div className="right-section">
+        <Link className="profile-link header-link" to="/profile">
+          <span className="user-text">Hello, {user.name}</span>
+    
+        </Link>
         <Link className="orders-link header-link" to="/orders">
           <span className="orders-text">Orders</span>
         </Link>

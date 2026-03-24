@@ -5,10 +5,9 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { ProductsGrid } from "./ProductsGrid";
 
-export function HomePage({cart, loadCart}) {
+export function HomePage({cart, loadCart, user}) {
   const [products, setProducts] = useState([]);
   const [searchInput, setSearchInput] = useState("");
-  
   useEffect(() => {
     const getHomeData = async () => {
       const response = await axios.get("http://localhost:3001/api/products");
@@ -26,7 +25,7 @@ export function HomePage({cart, loadCart}) {
   return (
     <>
       <title>Ecommerce Project</title>
-      <Header setSearchInput={setSearchInput} cart={cart}/>
+      <Header setSearchInput={setSearchInput} cart={cart} user={user}/>
       <div className="home-page">
         <ProductsGrid products={filteredProducts} loadCart={loadCart} />
       </div>

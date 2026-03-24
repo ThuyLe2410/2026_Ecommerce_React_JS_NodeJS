@@ -13,17 +13,10 @@ export function Product({ product, loadCart }) {
     await axios.post("http://localhost:3001/api/cart", {
       productId: productId,
       quantity: selectedValue,
-    });
+    }, {withCredentials:true});
     setAddedProductId(productId);
     await loadCart();
   };
-  console.log(
-    "check added icon",
-    "addedProductId",
-    addedProductId,
-    "productId",
-    product.id,
-  );
   return (
     <div className="product-container" key={product.id}>
       <div className="product-image-container">

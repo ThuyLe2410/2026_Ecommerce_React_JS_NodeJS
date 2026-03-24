@@ -85,10 +85,24 @@
 }
 
 .header .right-section {
-  width: 180px;
+  width: 250px;
   flex-shrink: 0;
   display: flex;
   justify-content: end;
+}
+
+.profile-link {
+  color: white;
+  display: flex;
+  align-items: center;
+  padding-left: 13px;
+  padding-right: 13px;
+}
+
+.user-text {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .orders-link {

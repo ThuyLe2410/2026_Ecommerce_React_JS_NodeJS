@@ -9,20 +9,25 @@ export function OrderGrid({ orders, loadCart }) {
 
   const handleBuyAgain = async (id, nextQty) => {
     setSelectedProductId(id);
-    await axios.patch(`http://localhost:3001/api/cart/${id}`, {
-      quantity: nextQty,
-    });
+    await axios.patch(
+      `http://localhost:3001/api/cart/${id}`,
+      {
+        quantity: nextQty,
+      },
+      { withCredentials: true },
+    );
     await loadCart();
   };
   const handleDecrease = (id) => {
     const next = Math.max(0, qty - 1);
     setQty(next);
-    handleBuyAgain(id, qty);
+    handleBuyAgain(id, next);
   };
   const handleIncrease = (id) => {
     const next = qty + 1;
     setQty(next);
-    handleBuyAgain(id, qty);
+    console.log('buy again quantity', qty)
+    handleBuyAgain(id, next);
   };
   return (
     <div className="order-grid">

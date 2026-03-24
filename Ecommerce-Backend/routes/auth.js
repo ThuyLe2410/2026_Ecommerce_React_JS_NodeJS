@@ -14,6 +14,21 @@ function signToken(payload) {
   });
 }
 
+export async function requireAuth(req, res, next) {
+  const token = req.cookies?.auth_token;
+  if (!token) {
+    return res.status(401).json({ error: "Not logged in" });
+  }
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("payload", payload);
+    req.user = payload;
+    next();
+  } catch {
+    res.status(401).json({ error: "Invalid token" });
+  }
+}
+
 router.post("/signUp", async (req, res) => {
   const parsed = signUpSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -30,7 +45,7 @@ router.post("/signUp", async (req, res) => {
     .insert(users)
     .values({ name, email, passwordHash })
     .returning({ id: users.id, email: users.email });
-  const token = signToken({id: user.id, email: user.email})
+  const token = signToken({ id: user.id, email: user.email });
   console.log("token", token);
 
   res.cookie("auth_token", token, {
@@ -42,26 +57,36 @@ router.post("/signUp", async (req, res) => {
   res.json({ id: user.id, email: user.email });
 });
 
-router.post("/signIn", async(req, res) => {
-    const parsed = signInSchema.safeParse(req.body);
-    if (!parsed.success) {
-        return res.status(400).json({error: "Invalid input"})
-    }
-    const {email, password} = parsed.data;
-    const [user] = await db.select().from(users).where(eq(users.email, email));
-    if (!user) {
-        return res.status(400).json({error: "Invalid email"});
-    }
-    const ok = await comparePasswords(password, user.passwordHash);
-    if (!ok) return res.status(400).json({error: "Wrong password"});
-    const token = signToken({id: user.id, email: user.email});
-    res.cookie("auth_token", token, {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: false,
-        maxAge: 1000*60*60*24*7
-    });
-    res.json({id:user.id, email:user.email})
-})
+router.post("/signIn", async (req, res) => {
+  const parsed = signInSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: "Invalid input" });
+  }
+  const { email, password } = parsed.data;
+  const [user] = await db.select().from(users).where(eq(users.email, email));
+  if (!user) {
+    return res.status(400).json({ error: "Invalid email" });
+  }
+  const ok = await comparePasswords(password, user.passwordHash);
+  if (!ok) return res.status(400).json({ error: "Wrong password" });
+  const token = signToken({ id: user.id, email: user.email });
+  console.log("token", token);
+  res.cookie("auth_token", token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: false,
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+  });
+  res.json({ id: user.id, email: user.email });
+});
+
+router.get("/me", requireAuth, async (req, res) => {
+  const payload = req.user;
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, payload.email));
+  res.send({ userId: payload.id, email: payload.email, name: user.name });
+});
 
 export default router;

@@ -4,8 +4,6 @@ import { DeliveryOptions } from "./DeliveryOptions";
 import "./checkoutPage.css"
 
 export function OrderSummary({ cart, deliveryOptions, loadCart }) {
-  console.log("orderSummary_cart", cart);
-
   return (
     <div className="order-summary">
       {cart.map((item) => {

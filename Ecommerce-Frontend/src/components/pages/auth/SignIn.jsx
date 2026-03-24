@@ -15,10 +15,14 @@ export function SignIn() {
     setError("");
     try {
       setIsSubmitting(true);
-      await axios.post("http://localhost:3001/api/auth/signIn", {
-        email,
-        password,
-      });
+      await axios.post(
+        "http://localhost:3001/api/auth/signIn",
+        {
+          email,
+          password,
+        },
+        { withCredentials: true },
+      );
       navigate("/");
     } catch (err) {
       const message =
@@ -32,7 +36,6 @@ export function SignIn() {
     <div className="auth-page">
       <h1 className="auth-title">Create account</h1>
       <form className="auth-form" onSubmit={onSubmit}>
-
         <label className="auth-label">
           Email{" "}
           <input

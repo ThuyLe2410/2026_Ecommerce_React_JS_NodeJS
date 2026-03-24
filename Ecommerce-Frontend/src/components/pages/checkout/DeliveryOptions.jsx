@@ -9,7 +9,6 @@ export function DeliveryOptions({ deliveryOptions, cartItem, loadCart }) {
       {deliveryOptions.map((deliveryOption) => {
         const updateDeliveryOption = async () => {
           try {
-            console.log("clicked option", deliveryOption.id);
             await axios.patch(
               `http://localhost:3001/api/cart/${cartItem.productId}`,
               {

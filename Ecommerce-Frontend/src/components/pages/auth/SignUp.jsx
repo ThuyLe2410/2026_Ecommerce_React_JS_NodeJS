@@ -15,10 +15,9 @@ export function SignUp() {
     }
     try {
       setIsSubmitting(true);
-      const res = await axios.post("http://localhost:3001/api/auth/signUp", {
+      await axios.post("http://localhost:3001/api/auth/signUp", {
         name, email, password
       });
-      console.log('signUp', res.data)
       
       navigate("/signIn")
       

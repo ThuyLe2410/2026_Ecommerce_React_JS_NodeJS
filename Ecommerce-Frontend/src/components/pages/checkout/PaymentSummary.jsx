@@ -5,10 +5,11 @@ import axios from "axios";
 export function PaymentSummary({ paymentSummary, loadCart }) {
   const navigate = useNavigate();
   const handlePlaceOrder = async () => {
-    await axios.post(`http://localhost:3001/api/orders`);
+    await axios.post(`http://localhost:3001/api/orders`,{}, {
+      withCredentials: true,
+    });
     await loadCart();
-    navigate('/orders')
-
+    navigate("/orders");
   };
   return (
     <div className="payment-summary">

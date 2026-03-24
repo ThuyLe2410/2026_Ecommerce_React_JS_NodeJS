@@ -26,6 +26,9 @@ export const products = pgTable("products", {
 
 export const orders = pgTable("orders", {
   id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("userId")
+    .references(() => users.id)
+    .notNull(),
   orderTimeMs: bigint("orderTimeMs", { mode: "number" }),
   totalCostCents: integer("totalCostCents"),
   products: json("products"),
@@ -39,6 +42,9 @@ export const orders = pgTable("orders", {
 
 export const cart = pgTable("cart", {
   productId: varchar("productId", { length: 36 }).primaryKey(),
+    userId: uuid("userId")
+    .references(() => users.id)
+    .notNull(),
   quantity: integer("quantity"),
   deliveryOptionId: varchar("deliveryOptionId"),
   createdAt: timestamp("created_at", { withTimezone: true })
