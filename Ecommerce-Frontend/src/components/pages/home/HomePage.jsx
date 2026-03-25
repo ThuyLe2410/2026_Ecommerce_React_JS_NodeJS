@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { ProductsGrid } from "./ProductsGrid";
 
-export function HomePage({cart, loadCart, user}) {
+export function HomePage({cart, loadCart}) {
   const [products, setProducts] = useState([]);
   const [searchInput, setSearchInput] = useState("");
   useEffect(() => {
@@ -25,7 +25,7 @@ export function HomePage({cart, loadCart, user}) {
   return (
     <>
       <title>Ecommerce Project</title>
-      <Header setSearchInput={setSearchInput} cart={cart} user={user}/>
+      <Header setSearchInput={setSearchInput} cart={cart}/>
       <div className="home-page">
         <ProductsGrid products={filteredProducts} loadCart={loadCart} />
       </div>
